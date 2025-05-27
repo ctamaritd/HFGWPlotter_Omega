@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Gravitational Waves Plotter</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="{{ url_for('Omegaplot.static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    {{ bokeh_css | safe }}
+    <!-- Avoid caching -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+    <meta http-equiv="Pragma" content="no-cache"/>
+    <meta http-equiv="Expires" content="0"/>
+</head>
+<body>
+<div class="container-fluid h-100">
+    <div class="row h-100">
+        <!-- Plot Section (4/5 width) -->
+        <div class="col-md-8" id="plot-section">
+            <div id="title-section" class="d-flex justify-content-between">
+                <div>
+                    <h1>Stochastic Gravitational Waves Plotter</h1>
+                    <p id="subtitle" class="text-muted">Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Edited and maintained by A.R. and C.T.</p>
+                </div>
+                <div class="nav flex-column align-items-end ml-auto">
+                    <!--<a class="nav-link" href="{{ url_for('about') }}" target="_blank">About</a>-->
+                    <a class="nav-link" href="https://github.com/ctamaritd/HFGWPlotter_Omega/" target="_blank">GitHub</a>
+                </div>
+            </div>
+            {{ div | safe }}
+            {{script_bokeh_plot | safe }}
+            <div id="comments-box" class="comments-box">
+            <!-- Comments will be displayed here -->
+            </div>
+        </div>
+
+        <!-- Checkboxes and Sliders Section (1/5 width) -->
+        <div class="col-md-4" id="controls-section">
+            <table class="table table-bordered">
+                <thead>
+                 <tr>
+                    <th scope="col" colspan="3" class="text-center">Selection of bounds and signals</th>
+                </tr>
+                </thead>
+                <tr>
+                    <th scope="col" colspan="3" class="text-center">Theoretical/astrophysical Bounds</th>
+                </tr>
+                <tr>
+                    <td>
+                        <!-- Theoretical bounds checkboxes -->
+                        {% for label in physics_category_dict.TheoreticalBounds %}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                                    <label class="form-check-label" for="{{ label }}">
+                                        {{ label }}
+                                    </label>
+                                </div>
+                        {% endfor %}
+                </tr>
+                <tr>
+                    <th scope="col" colspan="3" class="text-center">Experimental Bounds</th>
+                </tr>
+                  <tr>
+                    <th scope="col">Current Bounds</th>
+                    <th scope="col">Experiments in active development</th>
+                    <th scope="col">Proposed Experiments</th>
+                </tr>
+                <tbody>
+                <tr>
+                    <td>
+                        <!-- Direct bounds checkboxes -->
+                        {% for label in physics_category_dict.Existing %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                            <label class="form-check-label" for="{{ label }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <!-- Indirect bounds checkboxes -->
+                        {% for label in physics_category_dict.Ongoing %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                            <label class="form-check-label" for="{{ label }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <!-- Projected bounds checkboxes -->
+                        {% for label in physics_category_dict.Proposed %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                            <label class="form-check-label" for="{{ label }}">
+                                {{ label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+
+             <!-- -->
+            <!-- Additional table Signals (Envelopes)-->
+            <!-- -->
+            <table class="table table-bordered">
+                <thead>
+                <tr>
+                    <th scope="col" colspan="1" class="text-center">Envelopes of potential signals</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <!-- Signal curves checkboxes -->
+                        {% for label in physics_category_dict.Signals_Envelope %}
+                            {% if ('Gmu' not in label) and ('MPBH' not in label)%}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                                    <label class="form-check-label" for="{{ label }}">
+                                        {{ label }}
+                                    </label>
+                                </div>
+                                <!--<div>
+                                {%  if (label == 'Global string') %}
+                                            {{ script_bokeh_cosmic_strings | safe }}
+                                {% endif %}
+                                </div>
+                                <div>
+                                {%  if (label == '1st-order p.t.') %}
+                                            {{ script_bokeh_phase_transition | safe }}
+                                {% endif %}
+                                </div>
+                                -->
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                </tbody>
+                 <!-- -->
+                <!-- Additional table Signals (Individual)-->
+                <!-- -->
+                <thead>
+                <tr>
+                    <th scope="col" colspan="1" class="text-center">Individual potential signals</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>
+                        <!-- Signal curves checkboxes -->
+                        {% for label in physics_category_dict.Signals_Individual %}
+                            {% if ('Gmu' not in label) and ('MPBH' not in label)%}
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="{{ label }}" id="{{ label }}" onclick="updatePlot('{{ label }}'); updateComments(this)">
+                                    <label class="form-check-label" for="{{ label }}">
+                                        {{ label }}
+                                    </label>
+                                </div>
+                                <!--<div>
+                                {%  if (label == 'Global string') %}
+                                            {{ script_bokeh_cosmic_strings | safe }}
+                                {% endif %}
+                                </div>
+                                <div>
+                                {%  if (label == '1st-order p.t.') %}
+                                            {{ script_bokeh_phase_transition | safe }}
+                                {% endif %}
+                                </div>
+                                -->
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+
+
+
+            <!-- -->
+            <div class="row">
+                <div class="col">
+                    <!-- X Range Slider -->
+                    {{ div_x | safe }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <!-- Y Range Slider -->
+                    {{ div_y | safe }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <!-- Width Slider -->
+                    {{ div_width | safe }}
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <!-- Height Slider -->
+                    {{ div_height | safe }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script src="{{ url_for('Omegaplot.static', filename='js/scripts.js') }}"></script>
+{{ bokeh_js | safe }}
+{{ script | safe }}
+</body>
+</html>
+
