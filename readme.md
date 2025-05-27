@@ -19,11 +19,11 @@ matplotlib
 
 Execute the following command in the main folder:
 
-python3 app.py 
+python3 app_local.py 
 
 The plot can be accessed in a browser by entering the following local address:
 
-http://127.0.0.1:5003
+http://127.0.0.1:5003/Omegaplot
 
 
 
