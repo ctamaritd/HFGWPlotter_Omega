@@ -36,11 +36,16 @@ color_signal_13 = 'coral'
 
 
 
+# data_files.py
+#matplotlib default colors
+#hc -> (8.54826*10^-19 Sqrt[Omega])/f
 prop_cycle = plt.rcParams['axes.prop_cycle']
 mplcolors = prop_cycle.by_key()['color']
 
+#Each row gives filename, short name, type (Direct bound/projected bound/projected curve/ indirect bound), color, depth level in plot
 detector_data = [
-    #(filepath, label, physics category, curve category, color, linewidth, linestyle, opacity, depth level, comment, x-coord of label, y-coord of label, angle of label, label color, label size)
+    # Direct bounds. They are plotted as shaded areas, so line width and dash style will be ignored
+    #(file, label, category, color, linewidth,linestyle, opacity, depth level, comment, x-shift of label, y-shift of label, angle of label, label color, label size)
     #LC Resonators
     ('Curves/DetectorCurves/PLS_DMRadioGUT_res.csv', 'DMRadio-GUT-res', 'Ongoing', 'Curves', color_ongoing_2, 3, 'dotted', 1,'glyph', None, 1.E-200, 1.E-200, -1.1*np.pi/2.8, color_ongoing, '11pt' ),
     ('Curves/DetectorCurves/PLS_DMRadioGUT.csv', 'DMRadio-GUT', 'Ongoing', 'Curves', color_ongoing_2, 2, 'solid', 1,'glyph', None, 3e7, 2.e12, 0., color_ongoing_2, '11pt' ),
@@ -74,13 +79,15 @@ detector_data = [
 
 
 
-theoretical_bounds_data = [#(filepath, label, physics category, curve category, color, linewidth, linestyle, opacity, depth level, comment, x-coord of label, y-coord of label, angle of label, label color, label size)
+theoretical_bounds_data = [#(file, label, category, color, linewidth,linestyle, opacity, depth level, comment, x-shift of label, y-shift of label, angle of label, label color, label size)
      ('Curves/TheoreticalBoundsCurves/DR.txt', 'BBN', 'Theoretical Bound',  'Curves', 'royalblue', 2, 'dashed', 1, 'glyph', None, 3E17, 1.5E-6, 0, 'royalblue', '11pt'),
      ('Curves/TheoreticalBoundsCurves/Galactic_Data.csv', 'Astro','Theoretical Bound', 'Points',  'royalblue', 2, None, 1, 'glyph', None, 1E16, 1E14, -1.5*np.pi/4, 'royalblue', '11pt')]
 
 
 signal_data = [
-    #(filepath, label, physics category, curve category, color, linewidth, linestyle, opacity, depth level, comment, x-coord of label, y-coord of label, angle of label, label color, label size)
+    #(file, label, category, color, linewidth,linestyle, opacity, depth level, comment, x-shift of label, y-shift of label, angle of label, label color, label size)
+    ###Global strings (envelope)
+    ####PBHs (envelope)
     ('Curves/SignalCurves/CosmologicalSources/PBHs_envelope_h2Omega.csv', 'PBHs', 'Signals_Envelope', 'Curves', color_signal_2, 3, 'solid', 1, 'glyph', 'Comment on PBH : ', 3E17, 1.5E-8, -0.1,  color_signal_2, '11pt'),
     ##
     ('Curves/SignalCurves/CosmologicalSources/Inflation-EFT_h2Omega.csv', 'Inflation-EFT', 'Signals_Envelope', 'Curves', color_signal_3, 3, 'solid', 1, 'glyph', None, 1E3, 7E-13, 0.2, color_signal_3, '11pt'),
@@ -103,6 +110,8 @@ signal_data = [
     ##
     ('Curves/SignalCurves/CosmologicalSources/Preheating_Quartic_h2Omega.csv', 'Preheating 2', 'Signals_Envelope', 'Curves', color_signal_12, 3, 'solid', 1, 'glyph', None, 1E9, 2E-15,  0, color_signal_12, '11pt'),
     ##
-    (' ','1st-order p.t.',  'Signals_Individual', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, mplcolors[1], '9pt')
+    (' ','1st-order p.t.',  'Signals_Individual', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, mplcolors[1], '9pt'),
+    ##
+    (' ','user',  'Signals_Individual', 'Curves', color_signal_7, 3, 'solid', 1, 'glyph', None, None, None, 0, mplcolors[1], '9pt')
     ]
 

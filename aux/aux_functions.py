@@ -76,6 +76,10 @@ class Data:
             delta_x = x_coord[position_label]
             delta_y = y_coord[position_label]
             label_angle = np.arctan(derivative[position_label])
+        #For signals calculated on the fly: user. Just do dummy vector
+        if label == 'user':
+            x_coord = 10**np.linspace(-18,21,100)
+            y_coord = np.array([ 1E-200 for _ in range(100) ])
 
         return Data(x_coord, y_coord, color, linewidth, linestyle, opacity, depth, label, physics_category, curve_category, comment, delta_x, delta_y, label_angle, label_color, label_size)  # Pass the category to Data initialization
 
@@ -280,6 +284,8 @@ def create_curves_dict(data_instances, physics_category_dict, curve_category_dic
             maxLengthAreas = max(maxLengthAreas, len(data_instance.x_coord))
         if (category == 'Points'):
             maxLengthPoints = max(maxLengthPoints, len(data_instance.x_coord))
+
+
     for label, data_instance in data_instances.items():
         #Extract common keys for simplicity
         color_key = f'color_{label}'
@@ -530,7 +536,11 @@ def add_curves_to_plot(fig, curves_dict, curves_dict_hc, physics_category_dict, 
                 data_y = data[y_key]
                 plot_source_curves.add(data_x, x_key)
                 plot_source_curves.add(data_y, y_key)
-                fig.line(x = x_key, y = y_key, source= plot_source_curves,  color = data[color_key], line_width = data[linewidth_key], line_dash = data[linestyle_key], line_alpha = data[opacity_key], level = data[depth_key], name = label, visible=False)
+                if 'user' in label:
+                    isvisible = True
+                else:
+                    isvisible = False
+                fig.line(x = x_key, y = y_key, source= plot_source_curves,  color = data[color_key], line_width = data[linewidth_key], line_dash = data[linestyle_key], line_alpha = data[opacity_key], level = data[depth_key], name = label, visible=isvisible)
 
             elif (curve_category == 'Areas'):
                 x_key = f'x_{label}'

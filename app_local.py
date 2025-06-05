@@ -27,13 +27,6 @@ Omegaplot = Blueprint('Omegaplot', __name__, static_folder='Omegaplot/static', t
 
 
 
-
-
-
-
-
-
-
 # Suppress specific Bokeh warning
 warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of the same length")
 
@@ -43,7 +36,9 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-
+app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
+UPLOAD_FOLDER = '/tmp/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
 
@@ -53,6 +48,11 @@ app = Flask(__name__)
 # Create a dictionary category_dict containing the experiment labels divided into categories (Indirect bounds, Direct bounds, Projected bounds and others)
 data_instances, physics_category_dict, curve_category_dict = load_and_categorize_data(detector_data, theoretical_bounds_data, signal_data)
 ## Define app section
+
+@Omegaplot.before_request
+def assign_user_id():
+    if 'user_id' not in session:
+        session['user_id'] = str(uuid.uuid4())
 
 @app.route('/about')
 def about():
@@ -72,10 +72,22 @@ def get_comments():
 
     return jsonify({'comment': comment})
 
+@Omegaplot.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['csvfile']
+    if file and file.filename.endswith('.csv'):
+        user_id = session.get("user_id")
+        path = os.path.join(UPLOAD_FOLDER, f"{user_id}.csv")
+        file.save(path)
+    return redirect(url_for('Omegaplot.index'))
+
+
+
 # Flask route to serve the HTML template with the initial Bokeh plot
 @Omegaplot.route('/')
 def index():
-    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot")# server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot")#server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
+    session_id = session.get("user_id")
+    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})# server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot")#server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
 
 
     return render_template(
@@ -91,8 +103,20 @@ def index():
 
 #Bokeh app for all
 def bokeh_plot_app(doc):
+
+
+    args = doc.session_context.request.arguments
+    print("ARGS:", args)
+    session_id = args.get("session_id", [b"default"])[0].decode()
+    csv_path = os.path.join(UPLOAD_FOLDER, f"{session_id}.csv")
+    #print(f"[DEBUG] session_id from server_document: {session_id}")
+    print(f'csv_path: {csv_path}')
+
+    #Start assuming no uploaded file by user
+
+    uploaded = {'loaded': False}
     #Global variables that can be seen by all users, even if they are fed different plots
-    global  data_instances, physics_category_dict, curves_category_dict, curves_dict, curves_dict_hc
+    #global  data_instances, physics_category_dict, curves_category_dict, curves_dict, curves_dict_hc
 
     what_to_plot = 0
     #Phase transition variables only defined in app, not globally, matching initial values
@@ -267,6 +291,8 @@ def bokeh_plot_app(doc):
     # Create dictionary of curves
 
     curves_dict, curves_dict_hc = create_curves_dict(data_instances, physics_category_dict, curve_category_dict, Omegah2max)
+
+    #print(curves_dict)
 
     # Link curves to a chart
     fig, plot_source_curves, plot_source_areas, plot_source_lollipops, plot_source_points,  annotation_source = add_curves_to_plot(fig, curves_dict, curves_dict_hc , physics_category_dict, curve_category_dict, what_to_plot, plot_source_curves, plot_source_areas, plot_source_lollipops, plot_source_points,  annotation_source)
@@ -611,6 +637,131 @@ def bokeh_plot_app(doc):
 
     slider_height.on_change('value',  lambda attr, old, new: update_height(new, curves_dict, curves_dict_hc))
 
+    #Update plot when external csv loaded
+    def update_from_external_csv():
+
+        print(f'hello world! {uploaded['loaded']}')
+
+        nonlocal plot_source_curves
+        nonlocal what_to_plot
+        nonlocal curves_dict
+        nonlocal curves_dict_hc
+
+        if not uploaded['loaded'] and os.path.exists(csv_path):
+            try:
+                print('recognized not loaded, os.path.exists')
+                df = pd.read_csv(csv_path,  header=None, names=['x', 'y'])
+
+
+                if 'x' in df.columns and 'y' in df.columns:
+                    #new_data_curves[x_key] = df['x']
+                    #new_data_curves[y_key] = df['y']
+                    xuser = df['x']
+                    yuser = df['y']
+                    lenCSV = len(xuser)
+                    lenDict = len(curves_dict['user']['xCurve_user'])
+                    #If length of CSV < current max length, just refill user data
+                    if lenDict >= lenCSV:
+                        nextra = lenDict - lenCSV
+                        x_key = 'xCurve_user'
+                        y_key = 'yCurve_user'
+                        if nextra > 0:
+                            xextra = np.array([ xuser[lenCSV-1] for _ in range(nextra) ])
+                            yextra = np.array([ yuser[lenCSV-1] for _ in range(nextra) ])
+                            xuser = np.concatenate([xuser,xextra])
+                            yuser = np.concatenate([yuser,yextra])
+                        #Update curves dict. Assume data is for h2Omega
+                        curves_dict['user'][x_key] = xuser
+                        curves_dict['user'][y_key] = yuser
+                        #If we are plotting h2Omega, update source
+                        if what_to_plot == 0:
+                            plot_source_curves.data[x_key] = xuser
+                            plot_source_curves.data[y_key] = yuser
+                        #Data for hc=8.93368/f Sqrt[h^2 Omega]
+                        yuser = 8.93368e-19/(xuser)*np.sqrt(yuser)
+                        curves_dict_hc['user'][x_key] = xuser
+                        curves_dict_hc['user'][y_key] = yuser
+                        #If we are plotting hc, update source
+                        if what_to_plot == 1:
+                            plot_source_curves.data[x_key] = xuser
+                            plot_source_curves.data[y_key] = yuser
+                    #If length of CSV > current max length, need to refill all other curves in "Curves" category
+                    #To avoid too many calls to change plot_source_curves, we use dict new_data_curves and update source in the end
+                    else:
+                        new_data_curves = {}
+                        nextra =  lenCSV - lenDict
+                        for label, data in curves_dict.items():
+                            # Determine the category of the curve
+                            category = None
+                            for cat, labels in curve_category_dict.items():
+                                if label in labels:
+                                    category = cat
+                                    break
+                            if category == 'Curves':
+                                print(f'found label {label} in category Curves')
+                                if 'user' not in label:
+                                    x_key = f'xCurve_{label}'
+                                    y_key = f'yCurve_{label}'
+                                    ###Read curves dict and modify
+                                    xaux = data[x_key]
+                                    yaux = data[y_key]
+                                    #print(f'{label}: xaux: {xaux}')
+                                    #print(f'{label}: yaux: {yaux}')
+                                    xextra = np.array([ xaux[lenDict-1] for _ in range(nextra) ])
+                                    yextra = np.array([ yaux[lenDict-1] for _ in range(nextra) ])
+                                    xaux = np.concatenate([xaux,xextra])
+                                    yaux = np.concatenate([yaux,yextra])
+                                    curves_dict[label][x_key] = xaux
+                                    curves_dict[label][y_key] = yaux
+                                    #If we are plotting h2Omega, update new data
+                                    if what_to_plot == 0:
+                                        new_data_curves[x_key] = xaux
+                                        new_data_curves[y_key] = yaux
+                                    ####Update curces_dict_hc
+                                    yaux = 8.93368e-19/(xaux)*np.sqrt(yaux)
+                                    curves_dict_hc[label][x_key] = xaux
+                                    curves_dict_hc[label][y_key] = yaux
+                                    #If we are plotting hc, update source
+                                    if what_to_plot == 1:
+                                        new_data_curves[x_key] = xaux
+                                        new_data_curves[y_key] = yaux
+                                if label == 'user': #Now we are in user data, no need to concatenate
+                                    x_key = f'xCurve_{label}'
+                                    y_key = f'yCurve_{label}'
+                                    #Update curves dict. Assume data is for h2Omega
+                                    curves_dict[label][x_key] = xuser
+                                    curves_dict[label][y_key] = yuser
+                                    #If we are plotting h2Omega, update source
+                                    if what_to_plot == 0:
+                                        new_data_curves[x_key] =  xuser
+                                        new_data_curves[y_key] =  yuser
+                                    #Data for hc=8.93368/f Sqrt[h^2 Omega]
+                                    yuser = 8.93368e-19/(xuser)*np.sqrt(yuser)
+                                    curves_dict_hc['user'][x_key] = xuser
+                                    curves_dict_hc['user'][y_key] = yuser
+                                    #If we are plotting hc, update source
+                                    if what_to_plot == 1:
+                                        new_data_curves[x_key] =  xuser
+                                        new_data_curves[y_key] =  yuser
+
+
+                        plot_source_curves.data = new_data_curves
+                        print(f'Data length for csv_path {csv_path}: {len(plot_source_curves.data['xCurve_user'])}')
+
+                    #We use this method to only have one call to change plot_source (as opposed to changing x and changing y with 2 statments)
+                    #plot_source_curves.data = new_data_curves
+                    uploaded['loaded'] = True
+                    print(f"CSV loaded for session {session_id}")
+            except Exception as e:
+                print(f"Error reading CSV: {e}")
+
+
+    # Check every 2 seconds
+    doc.add_periodic_callback(update_from_external_csv, 2000)
+
+
+
+
 
     #####################################################################################
     #####################################################################################
@@ -715,6 +866,20 @@ def bokeh_plot_app(doc):
 plot_app = Application(FunctionHandler(bokeh_plot_app))
 
 
+
+
+
+
+
+# if __name__ == '__main__':
+#     print('Opening Bokeh application on http://localhost:5006/')
+#     #server.io_loop.add_callback(server.show, "/")
+#     server.io_loop.start()
+#     #print('Opening Bokeh application on http://localhost:5007/')
+#     #server2.io_loop.start()
+#     # Join threads
+#     flask_thread.join()
+
 app.register_blueprint(Omegaplot, url_prefix='/Omegaplot')
 
 ###########################################
@@ -724,17 +889,15 @@ app.register_blueprint(Omegaplot, url_prefix='/Omegaplot')
 flask_thread = Thread(target=lambda: app.run(debug=True, port=5003, use_reloader=False))
 flask_thread.start()
 
-
 # Create and start a single Bokeh server with the different apps with different urls
 server = Server({'/plot': plot_app}, prefix="/Omegaplotworkers", io_loop=IOLoop.current(), allow_websocket_origin=["*","localhost:5006","127.0.0.1:5006","localhost:5003","127.0.0.1:5003"], port=5006)
 server.start()
 
 
 
-
 if __name__ == '__main__':
-     #print('Opening Bokeh application on http://localhost:5006/')
-     #server.io_loop.add_callback(server.show, "/")
      server.io_loop.start()
      flask_thread.join()
+
+
 
