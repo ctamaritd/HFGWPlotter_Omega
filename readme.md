@@ -23,7 +23,7 @@ python3 app.py
 
 The plot can be accessed in a browser by entering the following local address:
 
-http://127.0.0.1:5003
+http://127.0.0.1:5003/Omegaplot
 
 
 
