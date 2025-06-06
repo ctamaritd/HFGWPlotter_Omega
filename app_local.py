@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
+app.secret_key = 'NotSoSecretKey'
 UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -759,7 +759,15 @@ def bokeh_plot_app(doc):
     # Check every 2 seconds
     doc.add_periodic_callback(update_from_external_csv, 2000)
 
+    def cleanup_session(session_context):
+        try:
+            if os.path.exists(csv_path):
+                os.remove(csv_path)
+                print(f"[CLEANUP] Removed file for session {session_id}")
+        except Exception as e:
+            print(f"[ERROR] Failed to delete file for session {session_id}: {e}")
 
+    doc.on_session_destroyed(cleanup_session)
 
 
 
@@ -871,14 +879,6 @@ plot_app = Application(FunctionHandler(bokeh_plot_app))
 
 
 
-# if __name__ == '__main__':
-#     print('Opening Bokeh application on http://localhost:5006/')
-#     #server.io_loop.add_callback(server.show, "/")
-#     server.io_loop.start()
-#     #print('Opening Bokeh application on http://localhost:5007/')
-#     #server2.io_loop.start()
-#     # Join threads
-#     flask_thread.join()
 
 app.register_blueprint(Omegaplot, url_prefix='/Omegaplot')
 

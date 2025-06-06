@@ -1,6 +1,6 @@
 # HFGWplotter_Omega: Gravitational Waves Plotter for stochastic signals and power-law-integrated sensitivities
 
-### Created, updated and maintained by Francesco Muia, Andreas Ringwald and Carlos Tamarit.
+### Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Updated and maintained by A.R. and C.T.
 
 HFGWplotter_Omega is an interactive web application designed for visualizing and analyzing gravitational wave data. It offers a user-friendly interface for plotting various gravitational wave signals and detector sensitivity curves, allowing researchers and enthusiasts to explore and interpret gravitational wave data effectively.
 
@@ -19,11 +19,11 @@ matplotlib
 
 Execute the following command in the main folder:
 
-python3 app.py 
+python3 app_local.py 
 
 The plot can be accessed in a browser by entering the following local address:
 
-http://127.0.0.1:5003
+http://127.0.0.1:5003/Omegaplot
 
 
 
@@ -33,7 +33,7 @@ http://127.0.0.1:5003
 The application is organized as follows:
 
 ```
-GWplots/                            # Project directory
+HFGWplotter_Omega/                  # Project directory
 │
 ├── Curves                          # Repository containing all the curves to be plotted
 |   ├── TheoreticalBoundsCurves     # Repository containing all theoretical bounds
@@ -45,19 +45,21 @@ GWplots/                            # Project directory
 ├── aux                             # Repository containing auxiliary files
 │   ├── aux_functions.py            # File containing auxiliary functions
 │   ├── data_files.py               # File containing information about the curves to be plotted
-│   └── import.py                   # File containing all the imports
+│   ├── imports.py                  # File containing all the imports
+|   └── signal_functions.py         # File containing definitions for functions for some signal spectra (e.g. 1st order phase transitions)
+|
 │   
 ├── Omegaplot 
-│   ├──static/                         # Static files
-│   │   ├── css/                        # CSS files
-│   │   │   └── styles.css              # Main stylesheet
-│   │   └── js/                         # JavaScript files
-│   │         └── scripts.js              # JavaScript logic
+│   ├──static/                      # Static files
+│   │   ├── css/                    # CSS files
+│   │   │   └── styles.css          # Main stylesheet
+│   │   └── js/                     # JavaScript files
+│   │         └── scripts.js        # JavaScript logic
 │   │ 
-│   └── templates/                      # HTML templates
-│         └── index.html                  # Main HTML template
+│   └── templates/                  # HTML templates
+│         └── index.html            # Main HTML template
 │
-├── app.py                          # Main Flask application
+├── app_local.py                    # Main Flask application
 └── README.md                       # README file
 ```
 
@@ -73,8 +75,6 @@ GWplots/                            # Project directory
 
 ### Planned Features
 
-1. **Custom Curve Addition**: Introduce options for users to add their custom curves, either through mathematical expressions or by uploading data files in txt/csv formats.
-
 2. **Total ΔN<sub>eff</sub> Calculation**: Provide a feature to calculate the total effective number of relativistic species (ΔN<sub>eff</sub>), based on the plotted signals.
 
 
@@ -85,6 +85,4 @@ Contributions to HFGWplotter are welcome, whether they be in the form of feature
 
 ## License
 
-This is a public project, open to everyone, and aimed at serving the scientific community by providing a standard yet fully customizable gravitational waves plotter.
-
-Users are free to use, modify, and distribute this software. If you utilize this project in your research or in any other capacity, please acknowledge the authors by citing the relevant publications.
+MIT License
