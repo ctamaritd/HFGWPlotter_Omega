@@ -2,7 +2,13 @@
 
 ### Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Updated and maintained by A.R. and C.T.
 
-HFGWplotter_Omega is an interactive web application designed for visualizing and analyzing gravitational wave data. It offers a user-friendly interface for plotting various gravitational wave signals and detector sensitivity curves, allowing researchers and enthusiasts to explore and interpret gravitational wave data effectively.
+HFGWplotter_Omega is an interactive web application designed for visualizing and analyzing gravitational wave data in the form of stochastic signals plus power-law-integrated sensitivities. It offers a user-friendly interface, allowing researchers and enthusiasts to explore and interpret gravitational wave data effectively.
+
+# Online version
+
+The app is running online at 
+
+https://incandenza-01.zdv.uni-mainz.de/Omegaplot/
 
 # Dependencies
 
@@ -67,10 +73,12 @@ HFGWplotter_Omega/                  # Project directory
 
 ### Current Features
 
-- Interactive plotting of gravitational wave signals.
-- Toggle visibility of different gravitational wave detector sensitivity curves.
+- Interactive plotting of gravitational wave signals and power-law-integrated sensitivity curves
+- Change between plotting energy spectrum or characteristic strain
+- Toggle visibility of different curves.
 - Annotations on the plot that provide additional information.
 - Customizable plot ranges and dimensions through interactive sliders.
+- Users can upload their own signal curves from a csv file
 
 
 ### Planned Features
