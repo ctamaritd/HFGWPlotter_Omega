@@ -77,7 +77,7 @@ class Data:
             delta_y = y_coord[position_label]
             label_angle = np.arctan(derivative[position_label])
         #For signals calculated on the fly: user. Just do dummy vector
-        if label == 'user':
+        if label == 'Your curve':
             x_coord = 10**np.linspace(-18,21,100)
             y_coord = np.array([ 1E-200 for _ in range(100) ])
 
@@ -536,10 +536,10 @@ def add_curves_to_plot(fig, curves_dict, curves_dict_hc, physics_category_dict, 
                 data_y = data[y_key]
                 plot_source_curves.add(data_x, x_key)
                 plot_source_curves.add(data_y, y_key)
-                if 'user' in label:
-                    isvisible = True
-                else:
-                    isvisible = False
+                #if 'Your curve' in label:
+                #    isvisible = True
+                #else:
+                isvisible = False
                 fig.line(x = x_key, y = y_key, source= plot_source_curves,  color = data[color_key], line_width = data[linewidth_key], line_dash = data[linestyle_key], line_alpha = data[opacity_key], level = data[depth_key], name = label, visible=isvisible)
 
             elif (curve_category == 'Areas'):

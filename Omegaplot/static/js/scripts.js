@@ -83,3 +83,35 @@ function displayComments() {
     commentsBox.innerHTML = allCommentsHtml;  // Set as innerHTML to render HTML content
 }
 
+//Listener for upload button
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("upload-form");
+    if (!form) return;  // Ensure the form exists
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const fileField = document.querySelector("#csvfile");
+        if (!fileField || !fileField.files.length) {
+            alert("Please select a file.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("csvfile", fileField.files[0]);
+
+                          fetch("/Omegaplot/upload", {
+                              method: "POST",
+                              body: formData
+                          }).then(response => {
+                              if (response.ok) {
+                                  console.log("Upload complete");
+                                  // Optionally trigger an update to the Bokeh app
+                              } else {
+                                  console.error("Upload failed");
+                              }
+                          }).catch(err => {
+                              console.error("Error:", err);
+                          });
+    });
+});
