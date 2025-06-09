@@ -1,7 +1,7 @@
 # aux_functions.py
 import numpy as np
 import pandas as pd
-from bokeh.models import RangeSlider,  CustomJSTickFormatter, Slider, LabelSet, ColumnDataSource, Line
+from bokeh.models import RangeSlider,  CustomJSTickFormatter, Slider, LabelSet, ColumnDataSource, Line, ColorPicker, TextInput
 from bokeh.models.widgets import RadioButtonGroup
 from scipy.interpolate import RegularGridInterpolator as RGI
 from aux.signal_functions import OmegaPT
@@ -261,8 +261,43 @@ def create_sliders(fig,  Shmin, Shmax):
     h_vs_Omega_buttons = RadioButtonGroup(labels=[r"Plot energy fraction h²Ω", r"Plot characteristic strain h꜀"], active=0)
 
 
+    user_color_picker = ColorPicker(title = "Line Color", color = 'darkred')
 
-    return range_slider_x, range_slider_y,  slider_width, slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw  # return the sliders if needed
+    user_label_input = TextInput(title = "Label", value = "My curve")
+
+    user_label_size = TextInput(title = "Label Size", value = "9pt")
+
+    user_label_x = Slider(
+        title=" x coordinate of label",
+        start=-18.,
+        end=20.,
+        step=0.1,
+        value=-18,
+        format=CustomJSTickFormatter(code="return ((Math.pow(10,tick)).toExponential(0))"))
+
+
+    user_label_y = Slider(
+        title=" y coordinate of label",
+        start=-47.,
+        end=20.,
+        step=0.1,
+        value=-30,
+        format=CustomJSTickFormatter(code="return ((Math.pow(10,tick)).toExponential(0))"))
+
+
+    user_label_angle = Slider(
+        title=" Angle of label (radians)",
+        start=-np.pi,
+        end=np.pi,
+        step=0.1,
+        value=0.,
+    )
+
+
+
+
+
+    return range_slider_x, range_slider_y,  slider_width, slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  # return the sliders if needed
 
 # Create dictionary of curves and annotations
 def create_curves_dict(data_instances, physics_category_dict, curve_category_dict, Smax):

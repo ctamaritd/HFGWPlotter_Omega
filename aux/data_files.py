@@ -112,6 +112,6 @@ signal_data = [
     ##
     (' ','1st-order p.t.',  'Signals_Individual', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, mplcolors[1], '9pt'),
     ##
-    (' ','Your curve',  'Signals_Individual', 'Curves', color_signal_7, 3, 'solid', 1, 'glyph', None, None, None, 0, mplcolors[1], '9pt')
+    (' ','Your curve',  'Signals_Individual', 'Curves', color_signal_7, 3, 'solid', 1, 'glyph', None, None, None, 0, color_signal_7, '9pt')
     ]
 

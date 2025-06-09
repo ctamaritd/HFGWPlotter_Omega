@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-app.secret_key = 'NotSoSecretKey'
+app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
 UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -87,7 +87,7 @@ def upload():
 @Omegaplot.route('/')
 def index():
     session_id = session.get("user_id")
-    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})# server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot")#server_document(url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
+    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})#url=f"http://localhost:37629/Omegaplotworkers/plot"#url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
 
 
     return render_template(
@@ -106,7 +106,7 @@ def bokeh_plot_app(doc):
 
 
     args = doc.session_context.request.arguments
-    print("ARGS:", args)
+    #print("ARGS:", args)
     session_id = args.get("session_id", [b"default"])[0].decode()
     csv_path = os.path.join(UPLOAD_FOLDER, f"{session_id}.csv")
     #print(f"[DEBUG] session_id from server_document: {session_id}")
@@ -284,7 +284,7 @@ def bokeh_plot_app(doc):
 
     # Set up the sliders
 
-    slider_x, slider_y, slider_width,  slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw  = create_sliders(fig, Omegah2min, Omegah2max)
+    slider_x, slider_y, slider_width,  slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  = create_sliders(fig, Omegah2min, Omegah2max)
 
 
     # Create dictionary of curves
@@ -373,6 +373,7 @@ def bokeh_plot_app(doc):
     #Sliders for range/size
     layout_size = column(Div(text="<h1>Plot range and size</h1>"), slider_x, slider_y,   slider_width, slider_height)
     layout_phase_transition = column(Div(text="<h1>Phase transition parameters</h1>"), slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, visible = False, name = "panel_1st-order p.t.")
+    layout_user = column(Div(text="<h1>Customize your curve</h1>"), user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle,  visible = False, name = "pepe_Your curve")
 
 
 
@@ -386,6 +387,8 @@ def bokeh_plot_app(doc):
     #Function that updates annotation_angles and positions
     def update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max):
 
+        nonlocal hmin,hmax, user_label_angle
+
         # To reduce individual changes (communications with server) update main variable only once, so we use first copy
         new_data_annotation = dict(annotation_source.data)
 
@@ -395,6 +398,8 @@ def bokeh_plot_app(doc):
             curves_dict_to_use = curves_dict
         elif what_to_plot == 1:
             curves_dict_to_use = curves_dict_hc
+
+
 
 
         #Update plot_sources
@@ -435,6 +440,9 @@ def bokeh_plot_app(doc):
                 ratio = ((np.log10(hmax)-np.log10(hmin))/(np.log10(fmax)-np.log10(fmin)))*fig.width/(fig.height-legend_height)
                 new_label_angle = np.arctan(1/ratio*(-1+1/2*np.tan(label_angle)))
                 new_data_annotation[label_angle_key] = [new_label_angle]
+            #For user curve, change slider position
+            if label == 'Your curve':
+                user_label_angle.value = new_label_angle
 
 
 
@@ -530,6 +538,7 @@ def bokeh_plot_app(doc):
         nonlocal hmin, hmax, Omegah2min, Omegah2max
         nonlocal yrange
         what_to_plot = new
+        nonlocal user_label_x, user_label_y, user_label_angle
         #print('what_to_plot = ',what_to_plot)
         #Update ranges
         if what_to_plot == 0:
@@ -540,6 +549,13 @@ def bokeh_plot_app(doc):
             fig.y_range.start = Omegah2min
             fig.y_range.end = Omegah2max
             fig.yaxis[0].axis_label = r'Energy spectrum of grav. waves $$h^2\Omega_{\rm GW}$$'
+            old_label_x = 10**(user_label_x.value)
+            old_label_y = 10**(user_label_y.value)
+            #old_label_angle = user_label_angle.value
+            #Convert slider positions from hc to h2Omega
+            user_label_y.value = np.log10(1.25297e36*(old_label_x**2)*(old_label_y**2))
+            #user_label_angle.value = np.arctan(2+2*np.tan(old_label_angle))
+
         elif what_to_plot == 1:
             slider_y.value = (np.log10(float(hmin)), np.log10(float(hmax)))
             slider_y.start = -47
@@ -548,8 +564,15 @@ def bokeh_plot_app(doc):
             fig.y_range.start = hmin
             fig.y_range.end = hmax
             fig.yaxis[0].axis_label = r'Characteristic strain $$h_c$$'
+            old_label_x = 10.**user_label_x.value
+            old_label_y = 10.**user_label_y.value
+            #old_label_angle = user_label_angle.value
+            #Convert slider position from h2Omega to hc
+            user_label_y.value = np.log10(8.93368e-19/(old_label_x)*np.sqrt(old_label_y))
+            #user_label_angle.value = np.arctan(-1+1/2*np.tan(old_label_angle))
         # Call the update_plot_data function and update new_data
         update_plot_data(curves_dict, curves_dict_hc, curve_category_dict, what_to_plot)
+
 
 
     h_vs_Omega_buttons.on_change('active', lambda attr, old, new:  h_vs_Omega_button_handler(new, curves_dict, curves_dict_hc, curve_category_dict))
@@ -636,7 +659,136 @@ def bokeh_plot_app(doc):
 
     slider_height.on_change('value',  lambda attr, old, new: update_height(new, curves_dict, curves_dict_hc))
 
-    #Update plot when external csv loaded
+
+
+    def update_user_color(attr, old, new):
+        nonlocal annotation_source
+        label = 'Your curve'
+        line = fig.select(name=label)[0]  # get first match
+        line.glyph.line_color = new
+
+        new_data_annotation = dict(annotation_source.data)
+        label = 'Your curve'
+        label_color_key = f'label_color_{label}'
+
+        new_data_annotation[label_color_key ] = [new]  # Change the x position
+        annotation_source.data = new_data_annotation
+
+        #labelset = fig.select(name=f'annotation_{label}')[0]  # Get LabelSet by name
+        #labelset.text_color = new
+
+
+    user_color_picker.on_change('color', update_user_color)
+
+    def update_user_label(new):
+        nonlocal annotation_source
+        ## To reduce individual changes (communications with server) update main variable only once, so we use first copy
+        new_data_annotation = dict(annotation_source.data)
+        label = 'Your curve'
+        label_text_key = f'annotation_text_{label}'
+
+        new_data_annotation[label_text_key] = [new]  # Change the x position
+        annotation_source.data = new_data_annotation
+
+
+    user_label_input.on_change('value',  lambda attr, old, new: update_user_label(new))
+
+    def update_user_label_size(new):
+        nonlocal annotation_source
+        ## To reduce individual changes (communications with server) update main variable only once, so we use first copy
+        new_data_annotation = dict(annotation_source.data)
+        label = 'Your curve'
+        label_size_key = f'label_size_{label}'
+
+        new_data_annotation[label_size_key] = [new]  # Change the x position
+        annotation_source.data = new_data_annotation
+
+
+    user_label_size.on_change('value',  lambda attr, old, new: update_user_label_size(new))
+
+    def update_user_label_x(new):
+        nonlocal annotation_source
+        nonlocal curves_dict
+        nonlocal curves_dict_hc
+        label = 'Your curve'
+        annotation_x_key = f'annotation_x_{label}'  # Adjusted to use the dynamic key
+        #Update curves dict (necessary for jumps between h2Omega and hc)
+        curves_dict[label][annotation_x_key] = 10.**new
+        curves_dict_hc[label][annotation_x_key] = 10.**new
+
+        ## To reduce individual changes (communications with server) update main variable only once, so we use first copy
+        new_data_annotation = dict(annotation_source.data)
+
+        new_data_annotation[annotation_x_key] = [10.**new]  # Change the x position
+        annotation_source.data = new_data_annotation
+
+    user_label_x.on_change('value',  lambda attr, old, new: update_user_label_x(new))
+
+    def update_user_label_y(new):
+        nonlocal annotation_source
+        nonlocal curves_dict
+        nonlocal curves_dict_hc
+        nonlocal what_to_plot
+        label = 'Your curve'
+        annotation_x_key = f'annotation_x_{label}'  # Adjusted to use the dynamic key
+        annotation_y_key = f'annotation_y_{label}'  # Adjusted to use the dynamic key
+        annotation_x_aux = curves_dict[label][annotation_x_key]
+        annotation_y_aux = 10.**new
+        if what_to_plot == 0:# We are plotting h2Omega
+            curves_dict[label][annotation_y_key] = annotation_y_aux
+            #Convert to hc
+            annotation_y_aux = 8.93368e-19/(annotation_x_aux)*np.sqrt(annotation_y_aux)
+            curves_dict_hc[label][annotation_y_key] = annotation_y_aux
+        else: #We are plotting hc
+            curves_dict_hc[label][annotation_y_key] = annotation_y_aux
+            #Convert to h2Omega
+            annotation_y_aux = 1.25297e36*(annotation_x_aux**2)*(annotation_y_aux**2)
+            curves_dict[label][annotation_y_key] = annotation_y_aux
+
+        ## To reduce individual changes (communications with server) update main variable only once, so we use first copy
+        new_data_annotation = dict(annotation_source.data)
+
+
+        new_data_annotation[annotation_y_key] = [10.**new]  # Change the x position
+        annotation_source.data = new_data_annotation
+
+    user_label_y.on_change('value',  lambda attr, old, new: update_user_label_y(new))
+
+    def update_user_label_angle(new):
+        nonlocal annotation_source
+        nonlocal curves_dict
+        nonlocal curves_dict_hc
+        nonlocal what_to_plot
+        nonlocal fmin, fmax, hmin, hmax, Omegah2min, Omegah2max
+        label = 'Your curve'
+        label_angle_key  = f'label_angle_{label}'
+
+        ## To reduce individual changes (communications with server) update main variable only once, so we use first copy
+        new_data_annotation = dict(annotation_source.data)
+        new_data_annotation[label_angle_key] = [new]  # Change the Angle directly in annotation
+
+        #Save angle to dictionary (needed for change between hc/h2Omega), correct for ratio
+        #Angle is not changed between dictionaries
+        if what_to_plot == 0:
+                ratio = ((np.log10(Omegah2max)-np.log10(Omegah2min))/(np.log10(fmax)-np.log10(fmin)))*fig.width/(fig.height-legend_height)
+                new_label_angle_dict = np.arctan(ratio*(np.tan(new)))
+
+        #If plotting hc
+        if what_to_plot == 1:
+                ratio = ((np.log10(hmax)-np.log10(hmin))/(np.log10(fmax)-np.log10(fmin)))*fig.width/(fig.height-legend_height)
+                new_label_angle_dict = np.arctan(2*(1+ratio*np.tan(new)))
+
+        curves_dict[label][label_angle_key] = new_label_angle_dict
+        curves_dict_hc[label][label_angle_key] = new_label_angle_dict
+
+
+        annotation_source.data = new_data_annotation
+
+    user_label_angle.on_change('value',  lambda attr, old, new: update_user_label_angle(new))
+
+
+
+ #Update plot when external csv loaded
     def update_from_external_csv():
 
 
@@ -645,6 +797,7 @@ def bokeh_plot_app(doc):
         nonlocal curves_dict
         nonlocal curves_dict_hc
         nonlocal last_modified
+        nonlocal fig
 
 
         if os.path.exists(csv_path):
@@ -750,6 +903,11 @@ def bokeh_plot_app(doc):
 
                             plot_source_curves.data = new_data_curves
                             #print(f'Data length for csv_path {csv_path}: {len(plot_source_curves.data['xCurve_Your curve'])}')
+                            #Update annotation visibility
+                            #labelset = fig.select(name='Your curve')[0]  # Get LabelSet by name
+                            #labelset.visible = True   # Toggle visibility
+                            #paco f"annotation_{label}"
+
 
                         #We use this method to only have one call to change plot_source (as opposed to changing x and changing y with 2 statments)
                         #plot_source_curves.data = new_data_curves
@@ -868,7 +1026,7 @@ def bokeh_plot_app(doc):
 
 
     # Add the layout to the Bokeh document
-    final_layout = column(layout,  Div(text="<div style='height: 10px; background-color: black; width: 100%;'></div>"), row(layout_size,Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),layout_phase_transition), sizing_mode="scale_both")
+    final_layout = column(layout,  Div(text="<div style='height: 10px; background-color: black; width: 100%;'></div>"), row(layout_size,Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),layout_phase_transition, Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_user), sizing_mode="scale_both")
     doc.add_root(final_layout)
 
 
@@ -881,6 +1039,14 @@ plot_app = Application(FunctionHandler(bokeh_plot_app))
 
 
 
+# if __name__ == '__main__':
+#     print('Opening Bokeh application on http://localhost:5006/')
+#     #server.io_loop.add_callback(server.show, "/")
+#     server.io_loop.start()
+#     #print('Opening Bokeh application on http://localhost:5007/')
+#     #server2.io_loop.start()
+#     # Join threads
+#     flask_thread.join()
 
 app.register_blueprint(Omegaplot, url_prefix='/Omegaplot')
 

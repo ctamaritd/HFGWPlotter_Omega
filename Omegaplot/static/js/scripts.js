@@ -21,9 +21,20 @@ function updatePlot(button_label) {
     const glyph3 = Bokeh.documents[0].get_model_by_name(`panel_${button_label}`);
 
     if (glyph3) {
+        console.log(`Found panel for ${button_label}`)
        // glyph2.visible = !glyph2.visible;
        glyph3.visible = isChecked;
     }
+
+    const glyph4 = Bokeh.documents[0].get_model_by_name(`pepe_${button_label}`);
+
+    if (glyph4) {
+        console.log(`Found panel for ${button_label}`)
+        // glyph2.visible = !glyph2.visible;
+        glyph4.visible = isChecked;
+    }
+
+
 
     const annotation = Bokeh.documents[0].get_model_by_name(`annotation_${button_label}`);
     console.log(`Annotation for ${button_label} found: `, annotation);
