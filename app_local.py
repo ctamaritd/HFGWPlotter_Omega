@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
+app.secret_key = 'NotSoSecretKey'
 UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -87,7 +87,7 @@ def upload():
 @Omegaplot.route('/')
 def index():
     session_id = session.get("user_id")
-    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})#url=f"http://localhost:37629/Omegaplotworkers/plot"#url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
+    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})
 
 
     return render_template(

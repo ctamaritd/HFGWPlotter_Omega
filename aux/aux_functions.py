@@ -286,11 +286,12 @@ def create_sliders(fig,  Shmin, Shmax):
 
 
     user_label_angle = Slider(
-        title=" Angle of label (radians)",
+        title=" Angle of label (degrees)",
         start=-np.pi,
         end=np.pi,
-        step=0.1,
+        step=0.01,
         value=0.,
+        format=CustomJSTickFormatter(code="""return (tick * 180 / Math.PI).toFixed(0) + "\\u00B0";""")
     )
 
 
