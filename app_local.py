@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-app.secret_key = 'NotSoSecretKey'
+app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
 UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -87,7 +87,8 @@ def upload():
 @Omegaplot.route('/')
 def index():
     session_id = session.get("user_id")
-    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})
+    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})#url=f"http://localhost:37629/Omegaplotworkers/plot"#url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
+
 
 
     return render_template(
@@ -125,7 +126,9 @@ def bokeh_plot_app(doc):
     vw = vw0
     gstar = gstar0
 
-
+    #Variables for Total energy fraction in GWs
+    h2OmegaGW = 0.
+    dRBoundViolation = "Unknown"
 
     # Global ColumnDataSource objects to manage plot data
 
@@ -365,15 +368,16 @@ def bokeh_plot_app(doc):
     #legend_fig.add_layout(legend, 'center')
 
 
-
-
+    #Text boxes for DarkRadiation
+    divOmegaGW = Div(text=f"<b>Energy fraction in GWs:</b> {h2OmegaGW:.4f}")
+    divDRBound = Div(text=f"<b>Compliance with DR bound:</b> {dRBoundViolation}")
 
     #Main plot with range/size sliders
     layout = column(h_vs_Omega_buttons, fig)
     #Sliders for range/size
     layout_size = column(Div(text="<h1>Plot range and size</h1>"), slider_x, slider_y,   slider_width, slider_height)
     layout_phase_transition = column(Div(text="<h1>Phase transition parameters</h1>"), slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, visible = False, name = "panel_1st-order p.t.")
-    layout_user = column(Div(text="<h1>Customize your curve</h1>"), user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle,  visible = False, name = "pepe_Your curve")
+    layout_user = column(Div(text="<h1>Customize your curve</h1>"), user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle, divOmegaGW, divDRBound, visible = False, name = "panel2_Your curve")
 
 
 
@@ -659,7 +663,10 @@ def bokeh_plot_app(doc):
 
     slider_height.on_change('value',  lambda attr, old, new: update_height(new, curves_dict, curves_dict_hc))
 
-
+    ##################################################
+    ##################################################
+    ##################################################
+    #update user curve
 
     def update_user_color(attr, old, new):
         nonlocal annotation_source
@@ -730,6 +737,7 @@ def bokeh_plot_app(doc):
         nonlocal curves_dict_hc
         nonlocal what_to_plot
         label = 'Your curve'
+        #Need both x,y to convert between h2Omega, hc
         annotation_x_key = f'annotation_x_{label}'  # Adjusted to use the dynamic key
         annotation_y_key = f'annotation_y_{label}'  # Adjusted to use the dynamic key
         annotation_x_aux = curves_dict[label][annotation_x_key]
@@ -799,6 +807,10 @@ def bokeh_plot_app(doc):
         nonlocal last_modified
         nonlocal fig
 
+        #Reset h2OMegaGW, dR
+        #h2OmegaGW = 0
+        #dRBoundViolation = "Unknown"
+
 
         if os.path.exists(csv_path):
             stat = os.stat(csv_path)
@@ -808,12 +820,77 @@ def bokeh_plot_app(doc):
                 try:
                     df = pd.read_csv(csv_path,  header=None, names=['x', 'y'])
 
+                    # Sort by x in ascending order
+                    df = df.sort_values(by='x', ascending=True).reset_index(drop=True)
+
 
                     if 'x' in df.columns and 'y' in df.columns:
                         #new_data_curves[x_key] = df['x']
                         #new_data_curves[y_key] = df['y']
                         xuser = df['x']
                         yuser = df['y']
+                        ####FIRST THING. ESTIMATE Integrated energy
+
+                        try:
+                            # Create interpolator for inside the range
+                            interp_func = interp1d(xuser, yuser, kind='cubic', bounds_error=False, fill_value="extrapolate")
+                            fit_points = min(5, int(len(yuser)/4))
+                            if (fit_points)>1:
+                                def power_law(x, a, b):
+                                    return a * x**b
+                                # Fit power-law to the left boundary
+                                x_left = xuser[:fit_points]
+                                y_left = yuser[:fit_points]
+                                popt_left, _ = curve_fit(power_law, x_left, y_left, maxfev=10000)
+
+
+                                # Fit power-law to the right boundary
+                                x_right = xuser[-fit_points:]
+                                y_right = yuser[-fit_points:]
+                                popt_right, _ = curve_fit(power_law, x_right, y_right, maxfev=10000)
+
+
+                                def interpolator_with_extrapolation(x_new):
+                                    x_new = np.array(x_new)
+                                    y_new = np.empty_like(x_new, dtype=float)
+
+                                    # Masks
+                                    mask_left = x_new < xuser[0]
+                                    mask_right = x_new > xuser[len(xuser)-1]
+                                    mask_middle = ~ (mask_left | mask_right)
+
+                                    # Apply interpolation and extrapolation
+                                    y_new[mask_middle] = interp_func(x_new[mask_middle])
+                                    y_new[mask_left] = power_law(x_new[mask_left], *popt_left)
+                                    y_new[mask_right] = power_law(x_new[mask_right], *popt_right)
+
+                                    return y_new
+
+                                ##Create array of frequencies
+                                logxuserintegral = np.linspace(-18,19,num = 1000)
+                                #print('logxuserintegral: ',logxuserintegral)
+                                dlogxuserintegral = logxuserintegral[1]-logxuserintegral[0]
+                                #print('dlogxuserintegral: ',dlogxuserintegral)
+                                yuserintegral = interpolator_with_extrapolation(10**logxuserintegral)
+
+                                #print('yuserintegral: ',yuserintegral)
+
+                                h2OmegaGW = dlogxuserintegral*np.sum(yuserintegral)
+                                dRBound = curves_dict['BBN']['yCurve_BBN'][0]
+                                print('dRBound= ',dRBound)
+                                dRBoundViolation = True if (h2OmegaGW <= dRBound) else False
+                                divOmegaGW.text = f"<b>Energy fraction in GWs:</b> {h2OmegaGW}"
+                                divDRBound.text = f"<b>Compliance with DR bound:</b> {dRBoundViolation}"
+                        except Exception as ee:
+                            h2OmegaGW = "Unknown"
+                            dRBoundViolation = "Unknown"
+                            divOmegaGW.text = f"<b>Energy fraction in GWs:</b> {h2OmegaGW}"
+                            divDRBound.text = f"<b>Compliance with DR bound:</b> {dRBoundViolation}"
+                            print(f"Error estimating energy fraction: {ee}")
+
+
+
+
                         lenCSV = len(xuser)
                         label = 'Your curve'
                         lenDict = len(curves_dict[label][f'xCurve_{label}'])

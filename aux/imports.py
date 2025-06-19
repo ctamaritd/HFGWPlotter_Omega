@@ -33,6 +33,9 @@ import os, uuid
 from flask import redirect, session
 from werkzeug.utils import secure_filename
 import pandas as pd
+#Dark rad interpolation
+from scipy.interpolate import interp1d
+from scipy.optimize import curve_fit
 
 #
 import asyncio

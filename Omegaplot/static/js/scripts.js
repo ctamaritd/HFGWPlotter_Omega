@@ -26,7 +26,7 @@ function updatePlot(button_label) {
        glyph3.visible = isChecked;
     }
 
-    const glyph4 = Bokeh.documents[0].get_model_by_name(`pepe_${button_label}`);
+    const glyph4 = Bokeh.documents[0].get_model_by_name(`panel2_${button_label}`);
 
     if (glyph4) {
         console.log(`Found panel for ${button_label}`)
