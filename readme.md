@@ -79,11 +79,7 @@ HFGWplotter_Omega/                  # Project directory
 - Annotations on the plot that provide additional information.
 - Customizable plot ranges and dimensions through interactive sliders.
 - Users can upload their own signal curves from a csv file
-
-
-### Planned Features
-
-2. **Total ΔN<sub>eff</sub> Calculation**: Provide a feature to calculate the total effective number of relativistic species (ΔN<sub>eff</sub>), based on the plotted signals.
+- For user supplied curves, the total energy fraction in GWs, and the corresponding ΔNeff are estimated and checked against the BBN dark radiation bound
 
 
 
