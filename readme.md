@@ -20,10 +20,21 @@ bokeh
 flask
 matplotlib
 
+For example, assuming python3 is installed you can create a python virtual environment
+$python3 -m venv python-virtual-env
+
+Inside the environment, you can install the dependencies using pip
+$pip install numpy scipy bokeh flask matplotlib
+
+To load the environment:
+$source python-virtual-env/bin/activate
+
 
 # How to run
 
-Execute the following command in the main folder:
+If you are using a virtual environment, make sure it is activated (see "source" command above)
+
+Execute the following command in the main folder
 
 python3 app_local.py 
 

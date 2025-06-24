@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore", message="ColumnDataSource's columns must be of
 
 # Initialize app
 app = Flask(__name__)
-app.secret_key = 'George127!Lana#:Hubi47_Grabwoski!'
+app.secret_key = 'NotSoSecretKey'
 UPLOAD_FOLDER = '/tmp/uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -87,8 +87,7 @@ def upload():
 @Omegaplot.route('/')
 def index():
     session_id = session.get("user_id")
-    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})#url=f"http://localhost:37629/Omegaplotworkers/plot"#url=f"https://incandenza-01.zdv.uni-mainz.de/Omegaplotworkers/plot") #CHANGE FOR SERVER
-
+    script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})
 
 
     return render_template(
@@ -125,10 +124,18 @@ def bokeh_plot_app(doc):
     betaOverH = betaOverH0
     vw = vw0
     gstar = gstar0
+    Mp = 2.43536E18 #Planck mass
+
+    #Variables for CGMB
+    TCGMB = Mp #Initial CGMB temp plotted at Planck T
+
+
 
     #Variables for Total energy fraction in GWs
-    h2OmegaGW = 0.
+    h2OmegaGW = "Unknown"
     dRBoundViolation = "Unknown"
+    DeltaNeff = "Unknown"
+    h2OmegaGamma = 2.47907E-5 #Computed with g=2, T=2.72548 K, hubbleh = 0.6766
 
     # Global ColumnDataSource objects to manage plot data
 
@@ -287,12 +294,16 @@ def bokeh_plot_app(doc):
 
     # Set up the sliders
 
-    slider_x, slider_y, slider_width,  slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  = create_sliders(fig, Omegah2min, Omegah2max)
+    slider_x, slider_y, slider_width,  slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, slider_TCGMB, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  = create_sliders(fig, Omegah2min, Omegah2max)
 
 
     # Create dictionary of curves
 
     curves_dict, curves_dict_hc = create_curves_dict(data_instances, physics_category_dict, curve_category_dict, Omegah2max)
+
+    #Store CGMB curve at MP. Will use it for reference in scaling.
+    yCurve_CGMB_Mp = curves_dict['CGMB']['yCurve_CGMB']
+    annotation_y_CGMB_Mp = curves_dict['CGMB']['annotation_y_CGMB']
 
     #print(curves_dict)
 
@@ -369,24 +380,17 @@ def bokeh_plot_app(doc):
 
 
     #Text boxes for DarkRadiation
-    divOmegaGW = Div(text=f"<b>Energy fraction in GWs:</b> {h2OmegaGW:.4f}")
+    divOmegaGW = Div(text=f"<b>Energy fraction h<sup>2</sup>Ω<sub>GW</sub>:</b> {h2OmegaGW}")
     divDRBound = Div(text=f"<b>Compliance with DR bound:</b> {dRBoundViolation}")
+    divDeltaNeff = Div(text=f"<b>&#916;N<sub>eff</sub>:</b> {DeltaNeff}")
 
     #Main plot with range/size sliders
     layout = column(h_vs_Omega_buttons, fig)
     #Sliders for range/size
     layout_size = column(Div(text="<h1>Plot range and size</h1>"), slider_x, slider_y,   slider_width, slider_height)
     layout_phase_transition = column(Div(text="<h1>Phase transition parameters</h1>"), slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, visible = False, name = "panel_1st-order p.t.")
-     layout_user = column(Div(text="<h1>Customize your curve</h1>"), row(user_color_picker, user_label_input), user_label_size, user_label_x, user_label_y, user_label_angle, divOmegaGW, divDRBound, divDeltaNeff, visible = False, name = "panel2_Your curve")
-
-
-
-
-
-
-
-
-
+    layout_CGMB = column(Div(text="<h1>CGMB paramaters</h1>"), slider_TCGMB,  visible = False, name = "panel_CGMB")
+    layout_user = column(Div(text="<h1>Customize your curve</h1>"), row(user_color_picker, user_label_input), user_label_size, user_label_x, user_label_y, user_label_angle, divOmegaGW, divDRBound, divDeltaNeff, visible = False, name = "panel2_Your curve")
 
     #Function that updates annotation_angles and positions
     def update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max):
@@ -879,13 +883,17 @@ def bokeh_plot_app(doc):
                                 dRBound = curves_dict['BBN']['yCurve_BBN'][0]
                                 print('dRBound= ',dRBound)
                                 dRBoundViolation = True if (h2OmegaGW <= dRBound) else False
-                                divOmegaGW.text = f"<b>Energy fraction in GWs:</b> {h2OmegaGW}"
+                                DeltaNeff = 8/7*(11/4)**(4/3)*h2OmegaGW/h2OmegaGamma
+                                divOmegaGW.text = f"<b>Energy fraction h<sup>2</sup>Ω<sub>GW</sub>:</b> {h2OmegaGW}"
                                 divDRBound.text = f"<b>Compliance with DR bound:</b> {dRBoundViolation}"
+                                divDeltaNeff.text = f"<b>&#916;N<sub>eff</sub>:</b> {DeltaNeff}"
                         except Exception as ee:
                             h2OmegaGW = "Unknown"
                             dRBoundViolation = "Unknown"
-                            divOmegaGW.text = f"<b>Energy fraction in GWs:</b> {h2OmegaGW}"
+                            DeltaNeff = "Unknown"
+                            divOmegaGW.text = f"<b>Energy fraction h<sup>2</sup>Ω<sub>GW</sub>:</b> {h2OmegaGW}"
                             divDRBound.text = f"<b>Compliance with DR bound:</b> {dRBoundViolation}"
+                            divDeltaNeff.text = f"<b>&#916;N<sub>eff</sub>:</b> {DeltaNeff}"
                             print(f"Error estimating energy fraction: {ee}")
 
 
@@ -1100,10 +1108,77 @@ def bokeh_plot_app(doc):
     slider_pt_vw.on_change('value', update_vw)
 
 
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    #####################################################################################
+    ######################################################################################
+
+
+    #Handling changes in CGMB parameters: Simply change plot sources.
+    def update_plot_CGMB():
+
+        nonlocal plot_source_curves
+        nonlocal annotation_source
+        nonlocal yCurve_CGMB_Mp
+
+
+
+
+        x_coord = curves_dict['CGMB']['xCurve_CGMB']
+        y_coord = np.sqrt(TCGMB/Mp)*yCurve_CGMB_Mp
+        #Here, length of CGMB array might have been changed to include curves with higher number
+        pad_length = len(x_coord) - len(y_coord)
+        if pad_length > 0:
+            #We extend both y_coord as well as the CGMBSpectrum (so that the extension only needs to be done once if there are no further csv file additions)
+            yCurve_CGMB_Mp = np.concatenate([yCurve_CGMB_Mp,np.full(pad_length, yCurve_CGMB_Mp[-1])])
+            y_coord = np.concatenate([y_coord, np.full(pad_length, y_coord[-1])])
+
+        #Don't need to recompute angle all the time! Just rescale y position!!
+        annotation_y_coord = np.sqrt(TCGMB/Mp)*annotation_y_CGMB_Mp
+        annotation_x_coord = curves_dict['CGMB']['annotation_x_CGMB']
+
+
+
+        curves_dict['CGMB']['yCurve_CGMB'] = y_coord
+        curves_dict['CGMB']['annotation_y_CGMB'] = annotation_y_coord
+
+
+
+        #Coords for hc=8.93368e-19/f Sqrt[h^2 Omega]
+        y_coord_h = 8.93368e-19/(x_coord)*np.sqrt(y_coord)
+        annotation_y_coord = 8.93368e-19/(annotation_x_coord)*np.sqrt(annotation_y_coord)
+
+
+        curves_dict_hc['CGMB']['yCurve_CGMB'] = y_coord_h
+        curves_dict_hc['CGMB']['annotation_y_CGMB'] = annotation_y_coord
+
+
+
+        if what_to_plot == 0:
+            plot_source_curves.data['yCurve_CGMB'] = y_coord
+        elif what_to_plot == 1:
+            plot_source_curves.data['yCurve_CGMB'] = y_coord_h
+
+
+        annotation_source.data = update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max)
+
+    # Define a callback function for the phase transition sliders
+    def update_TCGMB(attr, old, new):
+        nonlocal TCGMB
+        TCGMB = 10.**slider_TCGMB.value
+        update_plot_CGMB()
+
+
+    # Attach the Python function to the 'value' change event of the slider
+    slider_TCGMB.on_change('value', update_TCGMB)
+
+
+
 
 
     # Add the layout to the Bokeh document
-    final_layout = column(layout,  Div(text="<div style='height: 10px; background-color: black; width: 100%;'></div>"), row(layout_size,Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),layout_phase_transition, Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_user), sizing_mode="scale_both")
+    final_layout = column(layout,  Div(text="<div style='height: 10px; background-color: black; width: 100%;'></div>"), row(layout_size,Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),layout_phase_transition,  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_CGMB, Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_user), sizing_mode="scale_both")
     doc.add_root(final_layout)
 
 
@@ -1126,6 +1201,7 @@ plot_app = Application(FunctionHandler(bokeh_plot_app))
 #     flask_thread.join()
 
 app.register_blueprint(Omegaplot, url_prefix='/Omegaplot')
+
 
 ###########################################
 ##CODE TO RUN WITH FLASK INTEGRATED SERVER
