@@ -58,6 +58,38 @@ class Data:
             if (label=='MAGO') or (label == 'MAGO (res)'):
                 x_coord = 1/(2*np.pi)*x_coord
                 y_coord = 1/np.sqrt(2*np.pi)*y_coord
+            #CGMB
+            if label == 'CGMB':
+                    x_coord = np.array(x_coord)
+                    y_coord = np.array(y_coord)
+
+                    #we compute label position and angle near peak
+                    derivative = np.gradient(np.log10(y_coord), np.log10(x_coord))
+                    nan_mask = np.isnan(derivative)
+                    # Filter out NaN elements using the mask
+                    derivative = derivative[~nan_mask]
+                    if len(derivative)>0:
+                        position_min = np.argmin(abs(derivative))
+                        delta_x = 2*x_coord[position_min]
+                        position_label = np.abs(x_coord - delta_x).argmin()
+                        delta_x = 1.1*x_coord[position_label]
+                        delta_y = 1.1*y_coord[position_label]
+                        label_angle = np.arctan(2.0*derivative[position_label])
+                    else:
+                        #If curve seems problematic, take delta_x delta_y out of plot, label angle 0
+                        delta_x = 1.e-5*fmin
+                        delta_y = 1.e-5*min(hmin,Omegah2min)
+                        label_angle = 0.
+
+
+
+                    #For CGMB we compute label position and angle near peak
+                    #position_max = np.argmax(y_coord)
+                    #delta_x = 5.*x_coord[position_max]
+                    #position_label = np.abs(x_coord - delta_x).argmin()
+                    #delta_x = x_coord[position_label]
+                    #delta_y = y_coord[position_label]
+                    #label_angle = 0
         #For signals calculated on the fly: phase transitions
         if label == '1st-order p.t.':
             #For PT, compute array for default parameters, T at weak scale 200 GeV, alpha = 0.1, beta = 10, v = 0.4, gstar = 106.75
@@ -254,6 +286,16 @@ def create_sliders(fig,  Shmin, Shmax):
         #format=CustomJSTickFormatter(code="return ((Math.pow(10,tick)).toExponential(2));")
     )
 
+    #Slider for CGMB
+    slider_TCGMB = Slider(
+        title=r" Temperature (GeV)",
+        start=2,
+        end=18.3866,
+        step=0.05,
+        value = 18.3866,
+        format=CustomJSTickFormatter(code="return ((Math.pow(10,tick)).toExponential(2));")
+    )
+
     # Code for h vs Omega button
 
 
@@ -298,7 +340,7 @@ def create_sliders(fig,  Shmin, Shmax):
 
 
 
-    return range_slider_x, range_slider_y,  slider_width, slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  # return the sliders if needed
+    return range_slider_x, range_slider_y,  slider_width, slider_height,  h_vs_Omega_buttons, slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, slider_TCGMB, user_color_picker, user_label_input, user_label_size, user_label_x, user_label_y, user_label_angle  # return the sliders if needed
 
 # Create dictionary of curves and annotations
 def create_curves_dict(data_instances, physics_category_dict, curve_category_dict, Smax):

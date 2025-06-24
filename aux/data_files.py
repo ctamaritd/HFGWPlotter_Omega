@@ -27,7 +27,7 @@ color_signal_4 = 'brown'
 color_signal_5 = 'firebrick'
 color_signal_6 = 'maroon'
 color_signal_7 = 'darkred'
-color_signal_8 = 'red'
+color_signal_8 = 'orangered'
 color_signal_9 = 'chocolate'
 color_signal_10 = 'salmon'
 color_signal_11 = 'tomato'
@@ -104,13 +104,15 @@ signal_data = [
     ##
     ('Curves/SignalCurves/CosmologicalSources/PT_envelope_h2Omega.csv', 'Phase transitions', 'Signals_Envelope', 'Curves', color_signal_10, 3, 'solid', 1, 'glyph', None, 1E7, 2E-6, 0, color_signal_10, '11pt'),
     ##
-    ('Curves/SignalCurves/CosmologicalSources/CGMB_SM_1e16_h2Omega.csv', 'CGMB', 'Signals_Envelope', 'Curves', color_signal_11, 3, 'solid', 1, 'glyph', None, 3E11, 2E-11, -0.97*np.pi/2, color_signal_11, '11pt'),
+    ('Curves/SignalCurves/CosmologicalSources/CGMB_SM_1e16_h2Omega.csv', 'CGMB (env.)', 'Signals_Envelope', 'Curves', color_signal_11, 3, 'solid', 1, 'glyph', None, 3E11, 2E-11, -0.97*np.pi/2, color_signal_11, '11pt'),
     ##
     ('Curves/SignalCurves/CosmologicalSources/Preheating_Quadratic_h2Omega.csv', 'Preheating 1', 'Signals_Envelope', 'Curves', color_signal_13, 3, 'solid', 1, 'glyph', None, 3E6, 2.5E-12, 0, color_signal_13, '11pt'),
     ##
     ('Curves/SignalCurves/CosmologicalSources/Preheating_Quartic_h2Omega.csv', 'Preheating 2', 'Signals_Envelope', 'Curves', color_signal_12, 3, 'solid', 1, 'glyph', None, 1E9, 2E-15,  0, color_signal_12, '11pt'),
     ##
     (' ','1st-order p.t.',  'Signals_Individual', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, mplcolors[1], '9pt'),
+    ##
+    ('Curves/SignalCurves/CosmologicalSources/CGMB_SM_Mp_h2Omega.csv', 'CGMB', 'Signals_Individual', 'Curves', 'orangered', 2, 'solid', 1, 'glyph', None, 3E11, 2E-11, -0.97*np.pi/2, 'orangered', '11pt'),
     ##
     (' ','Your curve',  'Signals_Individual', 'Curves', color_signal_7, 3, 'solid', 1, 'glyph', None, None, None, 0, color_signal_7, '9pt')
     ]
