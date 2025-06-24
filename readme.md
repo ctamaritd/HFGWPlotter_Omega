@@ -1,6 +1,6 @@
 # HFGWplotter_Omega: Gravitational Waves Plotter for stochastic signals and power-law-integrated sensitivities
 
-### Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Updated and maintained by A.R. and C.T.
+### Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Code maintained by Carlos Tamarit
 
 HFGWplotter_Omega is an interactive web application designed for visualizing and analyzing gravitational wave data in the form of stochastic signals plus power-law-integrated sensitivities. It offers a user-friendly interface, allowing researchers and enthusiasts to explore and interpret gravitational wave data effectively.
 
@@ -21,12 +21,15 @@ flask
 matplotlib
 
 For example, assuming python3 is installed you can create a python virtual environment
+
 $python3 -m venv python-virtual-env
 
 Inside the environment, you can install the dependencies using pip
+
 $pip install numpy scipy bokeh flask matplotlib
 
 To load the environment:
+
 $source python-virtual-env/bin/activate
 
 
