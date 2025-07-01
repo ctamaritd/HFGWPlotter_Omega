@@ -2,6 +2,8 @@
 
 ### Created by Francesco Muia, Andreas Ringwald and Carlos Tamarit. Code maintained by Carlos Tamarit
 
+### Credit for the data of the plots go the authors of arXiv:2501.11723, whose results and figures are the basis of this plotter
+
 HFGWplotter_Omega is an interactive web application designed for visualizing and analyzing gravitational wave data in the form of stochastic signals plus power-law-integrated sensitivities. It offers a user-friendly interface, allowing researchers and enthusiasts to explore and interpret gravitational wave data effectively.
 
 # Online version
