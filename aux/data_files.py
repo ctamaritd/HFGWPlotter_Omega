@@ -33,6 +33,7 @@ color_signal_10 = 'salmon'
 color_signal_11 = 'tomato'
 color_signal_12 = 'darksalmon'
 color_signal_13 = 'coral'
+color_signal_14 = 'crimson'
 
 
 
@@ -110,7 +111,7 @@ signal_data = [
     ##
     ('Curves/SignalCurves/CosmologicalSources/Preheating_Quartic_h2Omega.csv', 'Preheating 2', 'Signals_Envelope', 'Curves', color_signal_12, 3, 'solid', 1, 'glyph', None, 1E9, 2E-15,  0, color_signal_12, '11pt'),
     ##
-    (' ','1st-order p.t.',  'Signals_Individual', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, mplcolors[1], '9pt'),
+    (' ','1st-order p.t.',  'Signals_Individual', 'Curves', color_signal_14, 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, color_signal_14, '9pt'),
     ##
     ('Curves/SignalCurves/CosmologicalSources/CGMB_SM_Mp_h2Omega.csv', 'CGMB', 'Signals_Individual', 'Curves', 'orangered', 2, 'solid', 1, 'glyph', None, 3E11, 2E-11, -0.97*np.pi/2, 'orangered', '11pt'),
     ##

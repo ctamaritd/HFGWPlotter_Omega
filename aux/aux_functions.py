@@ -235,7 +235,7 @@ def create_sliders(fig,  Shmin, Shmax):
 
     range_slider_y = RangeSlider(
         title=r" Adjust $$\Omega h^2$$ range",
-        start=-30.,
+        start=-50.,
         end=20.,
         step=1,
         value=(np.log10(float(Shmin)), np.log10(float(Shmax))),
@@ -270,8 +270,8 @@ def create_sliders(fig,  Shmin, Shmax):
 
     slider_pt_betaOverH = Slider(
         title=r" $$\beta/H$$",
-        start=-6.,
-        end=1.,
+        start=0.,
+        end=4.,
         step=0.05,
         value = np.log10(betaOverH0),
         format=CustomJSTickFormatter(code="return ((Math.pow(10,tick)).toExponential(2));")

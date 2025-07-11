@@ -89,7 +89,6 @@ def index():
     session_id = session.get("user_id")
     script_bokeh_plot =  server_document(url=f"http://localhost:5006/Omegaplotworkers/plot", arguments={"session_id": session_id})
 
-
     return render_template(
         'index.html',
         script_bokeh_plot = script_bokeh_plot,
@@ -103,7 +102,7 @@ def index():
 
 #Bokeh app for all
 def bokeh_plot_app(doc):
-
+    #print(f"Bokeh version: {bokeh.__version__}")
 
     args = doc.session_context.request.arguments
     #print("ARGS:", args)
@@ -151,6 +150,7 @@ def bokeh_plot_app(doc):
 
 
 
+
     # Set up the figure
 
     #Global parameters for range, width and height
@@ -195,7 +195,7 @@ def bokeh_plot_app(doc):
     y_range=yrange,
     toolbar_location='below',
     tools='save',name = 'HFGWPlotter_stochastic')
-    fig.output_backend = "svg"
+    #fig.output_backend = "svg"
     fig.xgrid.level = 'image'
     fig.ygrid.level = 'image'
     # Add an extra logarithmic axis on the top
@@ -278,12 +278,27 @@ def bokeh_plot_app(doc):
     #fig.title.title_text_font_size = "12pt"  # Change y-axis label size
 
     #Label right-down corner
-    watermark = Label(x=fig.width-265, y=15, x_units = 'screen', y_units = 'screen', text=r"HFGWPlotter",  text_font_size="12pt", text_color="gray", text_font_style="bold", background_fill_color="white",background_fill_alpha=1, name="watermark")
+
+
+    #Logo source object
+    logo_source = ColumnDataSource(dict(url=["/Omegaplot/static/logo.png"], x=[1.5e19], y=[1e-27]))
+
+    # Add the image (adjust w and h to control size)
+    fig.add_glyph(logo_source, ImageURL(url="url", x="x", y="y", w=160,h=52.247,
+    w_units='screen', h_units='screen',
+    anchor='bottom_right',
+    global_alpha=0.7))
+
+
+
+
+
+    #watermark = Label(x=fig.width-265, y=15, x_units = 'screen', y_units = 'screen', text=r"HFGWPlotter",  text_font_size="12pt", text_color="gray", text_font_style="bold", background_fill_color="white",background_fill_alpha=1, name="watermark")
     #Label upper right
     #label = Label(x=585, y=450, x_units = 'screen', y_units = 'screen', text=r"Aggarwal et al. 2025",  text_font_size="12pt", text_color="gray", text_font_style="bold", background_fill_color="white",
     #background_fill_alpha=1)
     # Add the Label to the plot
-    fig.add_layout(watermark)
+   # fig.add_layout(watermark)
     #fig.log_axis_top.ticker = FixedTicker(ticks=custom_ticks_xaxis)
     #fig.xaxis.ticker.num_minor_ticks = 10
 
@@ -389,8 +404,17 @@ def bokeh_plot_app(doc):
     #Sliders for range/size
     layout_size = column(Div(text="<h1>Plot range and size</h1>"), slider_x, slider_y,   slider_width, slider_height)
     layout_phase_transition = column(Div(text="<h1>Phase transition parameters</h1>"), slider_pt_temp, slider_pt_alpha, slider_pt_betaOverH, slider_pt_vw, visible = False, name = "panel_1st-order p.t.")
-    layout_CGMB = column(Div(text="<h1>CGMB paramaters</h1>"), slider_TCGMB,  visible = False, name = "panel_CGMB")
+    layout_CGMB =  column(Div(text="<h1>CGMB paramaters</h1>"), slider_TCGMB,  visible = False, name = "panel_CGMB")
     layout_user = column(Div(text="<h1>Customize your curve</h1>"), row(user_color_picker, user_label_input), user_label_size, user_label_x, user_label_y, user_label_angle, divOmegaGW, divDRBound, divDeltaNeff, visible = False, name = "panel2_Your curve")
+
+
+
+
+
+
+
+
+
 
     #Function that updates annotation_angles and positions
     def update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max):
@@ -592,6 +616,7 @@ def bokeh_plot_app(doc):
 
         nonlocal fig
         nonlocal annotation_source
+        nonlocal logo_source
         nonlocal fmin
         nonlocal fmax
 
@@ -600,7 +625,12 @@ def bokeh_plot_app(doc):
         fig.x_range.start  = fmin
         fig.x_range.end = fmax
 
+        logo_source.data['x'] = [10**(new[1]-(new[1]-new[0])/63.1166)]
+
+
         annotation_source.data = update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max)
+
+
 
 
     slider_x.on_change('value', lambda attr, old, new: update_frange(new, curves_dict, curves_dict_hc))
@@ -609,6 +639,7 @@ def bokeh_plot_app(doc):
 
         nonlocal fig
         nonlocal annotation_source
+        nonlocal logo_source
         nonlocal Omegah2min, Omegah2max, hmin, hmax
 
 
@@ -626,6 +657,9 @@ def bokeh_plot_app(doc):
             fig.y_range.start = hmin
             fig.y_range.end = hmax
 
+
+        logo_source.data['y'] = [10**(new[0]+(new[1]-new[0])/46)]
+
         annotation_source.data =  update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max)
 
 
@@ -641,13 +675,13 @@ def bokeh_plot_app(doc):
 
         nonlocal fig
         nonlocal annotation_source
-        nonlocal watermark
+        #nonlocal watermark
 
         new_width = slider_width.value;
         fig.width = new_width;
 
         #watermark = fig.select(dict(name="watermark"))[0]
-        watermark.x = new_width-265;
+        #watermark.x = new_width-265;
 
 
         annotation_source.data =  update_annotation_angles(curves_dict, curves_dict_hc, what_to_plot, annotation_source, fig, fmin, fmax, Omegah2min, Omegah2max)
@@ -1180,6 +1214,7 @@ def bokeh_plot_app(doc):
     # Add the layout to the Bokeh document
     final_layout = column(layout,  Div(text="<div style='height: 10px; background-color: black; width: 100%;'></div>"), row(layout_size,Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"),layout_phase_transition,  Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_CGMB, Div(text="<div style='width: 10px; background-color: black; height: 100%;'></div>"), layout_user), sizing_mode="scale_both")
     doc.add_root(final_layout)
+
 
 
 

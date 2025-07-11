@@ -8,7 +8,7 @@ from threading import Thread
 
 
 # Bokeh
-from bokeh.models import ColumnDataSource, Div, Spacer, BoxAnnotation, Slider, RangeSlider,  LabelSet, LogAxis, LogTicker, FixedTicker, Title, Legend, Label, CustomJSTickFormatter, ColorPicker, TextInput
+from bokeh.models import ColumnDataSource, Div, Spacer, BoxAnnotation, Slider, RangeSlider,  LabelSet, LogAxis, LogTicker, FixedTicker, Title, Legend, Label, CustomJSTickFormatter, ColorPicker, TextInput, ImageURL
 from bokeh.plotting import figure, curdoc
 from bokeh.layouts import layout
 from bokeh.resources import INLINE
