@@ -125,7 +125,8 @@ def load_and_categorize_data(detector_data, theoretical_bounds_data, signal_data
         'Proposed': [],
         'TheoreticalBounds': [],
         'Signals_Envelope': [],
-        'Signals_Individual': []
+        'Signals_Individual': [],
+        'Signals_Astro': [],
     }
     curve_category_dict = {
         'Lines': [],
@@ -183,6 +184,8 @@ def load_and_categorize_data(detector_data, theoretical_bounds_data, signal_data
             physics_category_dict['Signals_Envelope'].append(label)
         elif physics_category == 'Signals_Individual':
             physics_category_dict['Signals_Individual'].append(label)
+        elif physics_category == 'Signals_Astro':
+            physics_category_dict['Signals_Astro'].append(label)
 
         if curve_category == 'Lines':
             curve_category_dict['Lines'].append(label)
@@ -235,7 +238,7 @@ def create_sliders(fig,  Shmin, Shmax):
 
     range_slider_y = RangeSlider(
         title=r" Adjust $$\Omega h^2$$ range",
-        start=-50.,
+        start=-60.,
         end=20.,
         step=1,
         value=(np.log10(float(Shmin)), np.log10(float(Shmax))),

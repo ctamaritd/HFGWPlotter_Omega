@@ -1,5 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.colors as mcolors
+import ast
 #some basic colors
 clearer='#fd94aeff'
 darker='#da76a2ff'
@@ -39,9 +41,23 @@ color_signal_14 = 'crimson'
 
 # data_files.py
 #matplotlib default colors
-#hc -> (8.54826*10^-19 Sqrt[Omega])/f
-prop_cycle = plt.rcParams['axes.prop_cycle']
-mplcolors = prop_cycle.by_key()['color']
+
+# Grab and explicitly force into a list of strings (Needed to change after mpl gave output as rgb tuples)
+mplcolors = [str(c) for c in plt.rcParams['axes.prop_cycle'].by_key()['color']]
+
+# 1. Fetch your current cycle
+raw_colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+
+# 2. Safely parse and convert them to standard hex strings
+mplcolors = []
+for c in raw_colors:
+    # If it's already a string representation of a tuple, safely parse it
+    if isinstance(c, str) and c.startswith('('):
+        c = ast.literal_eval(c)
+
+    # Convert whatever it is (tuple or valid color string) to a HEX string
+    mplcolors.append(mcolors.to_hex(c))
+
 
 #Each row gives filename, short name, type (Direct bound/projected bound/projected curve/ indirect bound), color, depth level in plot
 detector_data = [
@@ -114,6 +130,10 @@ signal_data = [
     (' ','1st-order p.t.',  'Signals_Individual', 'Curves', color_signal_14, 2, 'solid', 1, 'glyph', None, None, None, np.pi/4, color_signal_14, '9pt'),
     ##
     ('Curves/SignalCurves/CosmologicalSources/CGMB_SM_Mp_h2Omega.csv', 'CGMB', 'Signals_Individual', 'Curves', 'orangered', 2, 'solid', 1, 'glyph', None, 3E11, 2E-11, -0.97*np.pi/2, 'orangered', '11pt'),
+    ##
+    ('Curves/SignalCurves/Astrophysical_Sources/h2Omega_MainSq.csv', 'Main sequence stars', 'Signals_Astro', 'Curves', mplcolors[2], 2, 'solid', 1, 'glyph', None, 1E15, 1E-25, 1.2*np.pi/6, mplcolors[2], '11pt'),
+     ##
+    ('Curves/SignalCurves/Astrophysical_Sources/h2Omega_Sun.csv', 'Sun', 'Signals_Astro', 'Curves', mplcolors[1], 2, 'solid', 1, 'glyph', None, 1E15, 1E-17, 1.2*np.pi/6, mplcolors[1], '11pt'),
     ##
     (' ','Your curve',  'Signals_Individual', 'Curves', color_signal_7, 3, 'solid', 1, 'glyph', None, None, None, 0, color_signal_7, '9pt')
     ]
